@@ -23,6 +23,8 @@ const N_DIV_2 = new BN(
   16
 );
 
+const PsiDataExtractor = require("./psiDataExtractor");
+
 /**
  * Creates a new private transaction object.
  *
@@ -150,6 +152,17 @@ class PrivateTransaction {
         name: "restriction",
         default: Buffer.from([]),
       },
+      {
+        name: "extendedPrivacy",
+        nullable: true,
+        default: Buffer.from([]),
+      },
+      {
+        name: "privateArgs",
+        nullable: true,
+        default: Buffer.from([]),
+      },
+      // TODO: add extended signature
     ];
 
     /**
@@ -240,6 +253,9 @@ class PrivateTransaction {
     } else {
       arr.splice(11, 1);
     }
+
+    // delete privateArgs form the hash
+    arr.splice(13, 1);
 
     // create hash
     return ethUtil.rlphash(arr);
@@ -372,6 +388,20 @@ class PrivateTransaction {
       return errors.length === 0;
     }
     return errors.join(" ");
+  }
+
+  applyExtendedPrivacyIfPresent() {
+    const extendedPrivacy = this.raw[13];
+    if (extendedPrivacy != 0 && (Buffer.compare(extendedPrivacy, Buffer.from([0x02])) === 0)) {
+      if (this.raw[3].length != 0) {
+        // If tx.to != 0 --> It is method call (not contract creation)
+        const res = PsiDataExtractor.extractPrivateParamsOnLoad(this.raw);
+        this.raw[5] = res[0];
+        this.raw[14] = res[1];
+      }
+    } else {
+      console.log('Warning: extendedPrivacy value not supported');
+    }
   }
 }
 

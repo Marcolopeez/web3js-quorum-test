@@ -349,7 +349,12 @@ function Priv(web3) {
     if (options.privacyGroupId) {
       tx.privacyGroupId = options.privacyGroupId;
     }
+    if (options.extendedPrivacy) {
+      tx.extendedPrivacy = options.extendedPrivacy;
+    }
     tx.restriction = options.restriction || "restricted";
+
+    tx.applyExtendedPrivacyIfPresent();
 
     tx.sign(privateKeyBuffer);
 
