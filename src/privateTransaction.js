@@ -392,14 +392,16 @@ class PrivateTransaction {
 
   applyExtendedPrivacyIfPresent() {
     const extendedPrivacy = this.raw[13];
-    if (extendedPrivacy != 0 && (Buffer.compare(extendedPrivacy, Buffer.from([0x02])) === 0)) {
+    if (Buffer.compare(extendedPrivacy, Buffer.from([0x02])) === 0) {
       if (this.raw[3].length != 0) {
         // If tx.to != 0 --> It is method call (not contract creation)
-        const res = PsiDataExtractor.extractPrivateParamsOnLoad(this.raw);
+        const res = PsiDataExtractor.extractPrivateParams(this.raw);
         this.raw[5] = res[0];
         this.raw[14] = res[1];
+      } else {
+        console.log(`Warning: extendedPrivacy value not allowed for contract creation`);
       }
-    } else {
+    } else if ((Buffer.compare(extendedPrivacy, Buffer.from([0x03])) !== 0) && (Buffer.compare(extendedPrivacy, Buffer.from([0x01])) !== 0)) {
       console.log('Warning: extendedPrivacy value not supported');
     }
   }

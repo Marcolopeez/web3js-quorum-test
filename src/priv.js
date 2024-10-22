@@ -351,10 +351,9 @@ function Priv(web3) {
     }
     if (options.extendedPrivacy) {
       tx.extendedPrivacy = options.extendedPrivacy;
+      tx.applyExtendedPrivacyIfPresent();
     }
     tx.restriction = options.restriction || "restricted";
-
-    tx.applyExtendedPrivacyIfPresent();
 
     tx.sign(privateKeyBuffer);
 
